@@ -1,0 +1,21 @@
+{
+  "name": "nodebug",
+  "version": "1.0.0",
+  "description": "Log out all call stacks on errors",
+  "bin": {
+    "nodebug": "./index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "ws": "^7.3.1"
+  },
+  "devDependencies": {
+  }
+}
