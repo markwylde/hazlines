@@ -2,32 +2,35 @@
 
 const { spawn } = require('child_process');
 
+const getPort = require('get-port');
 const chalk = require('chalk');
 const WebSocket = require('ws');
 
 const blackList = new RegExp('^internal[/].*|bin/npm-cli.js$|bin/yarn.js$');
 
-const cp = spawn('node', ['--inspect', ...process.argv.slice(2)]);
-cp.stdout.pipe(process.stdout);
+getPort().then(port => {
+  const cp = spawn('node', [`--inspect=127.0.0.1:${port}`, ...process.argv.slice(2)]);
+  cp.stdout.pipe(process.stdout);
 
-let attached;
-cp.stderr.on('data', rawData => {
-  if (attached) {
-    process.stderr.write(rawData);
-    return;
-  }
+  let attached;
+  cp.stderr.on('data', rawData => {
+    if (attached) {
+      process.stderr.write(rawData);
+      return;
+    }
 
-  const data = rawData.toString();
-  if (data.startsWith('Debugger listening on')) {
-    const uri = data
-      .substr('Debugger listening on'.length)
-      .split('\n')[0]
-      .trim();
-    hookApp(uri);
-  } else if (!data.startsWith('Debugger attached')) {
-    attached = true;
-    process.stderr.write(rawData);
-  }
+    const data = rawData.toString();
+    if (data.startsWith('Debugger listening on')) {
+      const uri = data
+        .substr('Debugger listening on'.length)
+        .split('\n')[0]
+        .trim();
+      hookApp(uri);
+    } else if (!data.startsWith('Debugger attached')) {
+      attached = true;
+      process.stderr.write(rawData);
+    }
+  });
 });
 
 function hookApp (uri) {
