@@ -133,6 +133,10 @@ function hookApp (uri) {
             expression: `${errorVariableName}.stack = ${errorVariableName}.stack + \`${st}\``
           }
         });
+
+        if (data.params.data.uncaught) {
+          console.log(data.params.data.description + '\n' + st);
+        }
       }
       send({ method: 'Debugger.resume' });
     }
