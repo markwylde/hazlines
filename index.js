@@ -22,7 +22,12 @@ getPort().then(port => {
         .trim();
       hookApp(uri);
     } else if (data.startsWith('Debugger attached')) {
-      cp.stderr.pipe(process.stderr);
+      cp.stderr.on('data', rawData => {
+        const data = rawData.toString();
+        if (!data === 'Waiting for the debugger to disconnect...') {
+          process.stderr.write(rawData);
+        }
+      });
       cp.stderr.off('data', handleStdErr);
     } else {
       process.stderr.write(rawData);
@@ -94,6 +99,12 @@ function hookApp (uri) {
   }
   ws.on('message', async function (rawData) {
     const data = JSON.parse(rawData);
+
+    if (data.method === 'Runtime.executionContextDestroyed') {
+      ws.close();
+      return;
+    }
+
     if (data.method === 'Debugger.paused') {
       if (data.params.asyncStackTrace) {
         const st = logStackTrace(data.params.asyncStackTrace);
