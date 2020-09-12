@@ -24,6 +24,8 @@ getPort().then(port => {
     } else if (data.startsWith('Debugger attached')) {
       cp.stderr.pipe(process.stderr);
       cp.stderr.off('data', handleStdErr);
+    } else {
+      process.stderr.write(rawData);
     }
   }
 
