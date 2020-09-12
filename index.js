@@ -99,6 +99,9 @@ function hookApp (uri) {
   }
   ws.on('message', async function (rawData) {
     const data = JSON.parse(rawData);
+    // if (data.method !== 'Debugger.scriptParsed') {
+    //   console.log(JSON.stringify(data, null, 2));
+    // }
 
     if (data.method === 'Runtime.executionContextDestroyed') {
       ws.close();
@@ -109,13 +112,16 @@ function hookApp (uri) {
       if (data.params.asyncStackTrace) {
         const st = logStackTrace(data.params.asyncStackTrace);
 
+        const objectId = JSON.parse(data.params.data.objectId);
+        objectId.id = objectId.id + 1;
         const variables = await send({
           method: 'Runtime.getProperties',
           params: {
-            objectId: '{"injectedScriptId":1,"id":2}'
+            objectId: JSON.stringify(objectId)
           }
         });
-        const errorVariableName = variables.result.result[0].name;
+
+        const errorVariableName = variables.result ? variables.result.result[0].name : 'err';
 
         await send({
           method: 'Debugger.evaluateOnCallFrame',
