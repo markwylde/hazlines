@@ -96,16 +96,13 @@ function hookApp (uri) {
       }
       console.log(data.params.data.description);
       logStackTrace(data.params.asyncStackTrace);
+      process.exit(1);
     }
   });
 
   ws.on('open', async function () {
-    await send({ method: 'Profiler.enable' });
-    await send({ method: 'HeapProfiler.enable' });
-    await send({ method: 'NodeWorker.enable' });
     await send({ method: 'Runtime.enable' });
     await send({ method: 'Runtime.setAsyncCallStackDepth', params: { maxDepth: 128 } });
-    await send({ method: 'Runtime.runIfWaitingForDebugger' });
     await send({ method: 'Debugger.enable', params: { maxScriptsCacheSize: 100000000 } });
     await send({ method: 'Debugger.setBlackboxPatterns', params: { patterns: ['^internal[/].*|bin/npm-cli.js$|bin/yarn.js$'] } });
     await send({ method: 'Debugger.setPauseOnExceptions', params: { state: 'uncaught' } });
