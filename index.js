@@ -69,36 +69,55 @@ function hookApp (uri) {
   });
 
   function logStackTrace (trace) {
-    console.log('  ' + trace.description);
-    trace.callFrames
+    let lines = '\n  ' + chalk.yellow(trace.description || '') + '\n';
+    lines = lines + trace.callFrames
       .filter(frame => {
         return !frame.url.match(blackList);
       })
-      .forEach(frame => {
-        if (!frame.url.includes('file://')) {
-          return false;
-        }
+      .filter(frame => {
+        return frame.url.includes('file://');
+      })
+      .map(frame => {
         if (frame.url.includes('node_modules')) {
-          console.log(chalk.grey(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')'));
+          return chalk.grey(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')');
         } else {
-          console.log(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')');
+          return `    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')';
         }
-      });
+      })
+      .join('\n');
 
     if (trace.parent) {
-      logStackTrace(trace.parent);
+      lines = lines + logStackTrace(trace.parent) + '\n';
     }
+
+    return lines;
   }
-  ws.on('message', function (rawData) {
+  ws.on('message', async function (rawData) {
     const data = JSON.parse(rawData);
     if (data.method === 'Debugger.paused') {
-      if (!data.params.asyncStackTrace) {
-        send({ method: 'Debugger.resume' });
-        return;
+      if (data.params.asyncStackTrace) {
+        const st = logStackTrace(data.params.asyncStackTrace);
+
+        const variables = await send({
+          method: 'Runtime.getProperties',
+          params: {
+            objectId: '{"injectedScriptId":1,"id":2}'
+          }
+        });
+        const errorVariableName = variables.result.result[0].name;
+
+        await send({
+          method: 'Debugger.evaluateOnCallFrame',
+          params: {
+            callFrameId: '{"ordinal":0,"injectedScriptId":1}',
+            returnByValue: false,
+            silent: false,
+            objectGroup: 'console',
+            expression: `${errorVariableName}.stack = ${errorVariableName}.stack + \`${st}\``
+          }
+        });
       }
-      console.log(data.params.data.description);
-      logStackTrace(data.params.asyncStackTrace);
-      process.exit(1);
+      send({ method: 'Debugger.resume' });
     }
   });
 
@@ -106,7 +125,6 @@ function hookApp (uri) {
     await send({ method: 'Runtime.enable' });
     await send({ method: 'Runtime.setAsyncCallStackDepth', params: { maxDepth: 128 } });
     await send({ method: 'Debugger.enable', params: { maxScriptsCacheSize: 100000000 } });
-    await send({ method: 'Debugger.setBlackboxPatterns', params: { patterns: ['^internal[/].*|bin/npm-cli.js$|bin/yarn.js$'] } });
-    await send({ method: 'Debugger.setPauseOnExceptions', params: { state: 'uncaught' } });
+    await send({ method: 'Debugger.setPauseOnExceptions', params: { state: 'all' } });
   });
 }
