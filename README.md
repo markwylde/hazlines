@@ -15,11 +15,12 @@ Into this:
 
 ```bash
 $ hazlines example
+Error: who knows what went wrong?
+    at /Users/mark/Documents/Projects/hazlines/example/asyncThing.js:5:11
   Promise.then
-    at asyncThing (/app/project/asyncThing.js:4:42)
-    at anonymous (/app/project/index.js:5:5)
+    at asyncThing (/Users/mark/Documents/Projects/hazlines/example/asyncThing.js:4:42)
+    at anonymous (/Users/mark/Documents/Projects/hazlines/example/index.js:5:5)
   Timeout
-    at setTimeout (timers.js:157:19)
-    at main (/app/project/index.js:4:3)
-    at anonymous (/app/project/index.js:9:1)
+    at main (/Users/mark/Documents/Projects/hazlines/example/index.js:4:3)
+    at anonymous (/Users/mark/Documents/Projects/hazlines/example/index.js:9:1)
 ```

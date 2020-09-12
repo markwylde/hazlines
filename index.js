@@ -91,7 +91,7 @@ function hookApp (uri) {
         send({ method: 'Debugger.resume' });
         return;
       }
-
+      console.log(data.params.data.description);
       logStackTrace(data.params.asyncStackTrace);
     }
   });
