@@ -1,6 +1,6 @@
 {
   "name": "hazlines",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Log out all call stacks on errors",
   "bin": {
     "hazlines": "./index.js"
