@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
 const { spawn } = require('child_process');
-const path = require('path');
 
-// const chalk = require('chalk');
+const chalk = require('chalk');
 const WebSocket = require('ws');
 
-const blackList = new RegExp('^internal[\/].*|bin/npm-cli.js$|bin/yarn.js$');
+const blackList = new RegExp('^internal[/].*|bin/npm-cli.js$|bin/yarn.js$');
 
 const cp = spawn('node', ['--inspect', ...process.argv.slice(2)]);
 cp.stdout.pipe(process.stdout);
@@ -71,7 +70,14 @@ function hookApp (uri) {
         return !frame.url.match(blackList);
       })
       .forEach(frame => {
-        console.log(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')');
+        if (!frame.url.includes('file://')) {
+          return false;
+        }
+        if (frame.url.includes('node_modules')) {
+          console.log(chalk.grey(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')'));
+        } else {
+          console.log(`    at ${frame.functionName || 'anonymous'} (` + frame.url.replace('file://', '') + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1) + ')');
+        }
       });
 
     if (trace.parent) {
@@ -98,7 +104,7 @@ function hookApp (uri) {
     await send({ method: 'Runtime.setAsyncCallStackDepth', params: { maxDepth: 128 } });
     await send({ method: 'Runtime.runIfWaitingForDebugger' });
     await send({ method: 'Debugger.enable', params: { maxScriptsCacheSize: 100000000 } });
-    await send({ method: 'Debugger.setBlackboxPatterns', params: { patterns: ['^internal[\/].*|bin/npm-cli.js$|bin/yarn.js$'] } });
+    await send({ method: 'Debugger.setBlackboxPatterns', params: { patterns: ['^internal[/].*|bin/npm-cli.js$|bin/yarn.js$'] } });
     await send({ method: 'Debugger.setPauseOnExceptions', params: { state: 'uncaught' } });
   });
 }
