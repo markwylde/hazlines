@@ -1,4 +1,4 @@
-# nodebug
+# hazlines
 Turn this useless message:
 
 ```bash
@@ -14,7 +14,7 @@ $ node example
 Into this:
 
 ```bash
-$ nodebug example
+$ hazlines example
   Promise.then
     at asyncThing (/app/project/asyncThing.js:4:42)
     at anonymous (/app/project/index.js:5:5)
