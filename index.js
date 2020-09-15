@@ -103,10 +103,6 @@ function hookApp (uri) {
     //   console.log(JSON.stringify(data, null, 2));
     // }
 
-    if (data.method === 'Runtime.consoleAPICalled') {
-      data.params.args.filter(arg => arg.type === 'string').forEach(arg => console.log(arg.value))
-    }
-
     if (data.method === 'Runtime.executionContextDestroyed') {
       ws.close();
       return;
@@ -149,6 +145,7 @@ function hookApp (uri) {
     await send({ method: 'Runtime.enable' });
     await send({ method: 'Runtime.setAsyncCallStackDepth', params: { maxDepth: 128 } });
     await send({ method: 'Debugger.enable', params: { maxScriptsCacheSize: 100000000 } });
+    await send({ method: 'Log.disable' });
     await send({ method: 'Debugger.setPauseOnExceptions', params: { state: 'all' } });
   });
 }
