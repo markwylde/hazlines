@@ -103,6 +103,10 @@ function hookApp (uri) {
     //   console.log(JSON.stringify(data, null, 2));
     // }
 
+    if (data.method === 'Runtime.consoleAPICalled') {
+      data.params.args.filter(arg => arg.type === 'string').forEach(arg => console.log(arg.value))
+    }
+
     if (data.method === 'Runtime.executionContextDestroyed') {
       ws.close();
       return;
@@ -121,7 +125,7 @@ function hookApp (uri) {
           }
         });
 
-        const errorVariableName = variables.result ? variables.result.result[0].name : 'err';
+        const errorVariableName = variables.result && variables.result.result && variables.result.result[0] ? variables.result.result[0].name : 'err';
 
         await send({
           method: 'Debugger.evaluateOnCallFrame',
@@ -134,11 +138,10 @@ function hookApp (uri) {
           }
         });
 
-        if (data.params.data.uncaught) {
-          console.log(data.params.data.description + '\n' + st);
-        }
+        send({ method: 'Debugger.resume' });
+      } else {
+        send({ method: 'Debugger.resume' });
       }
-      send({ method: 'Debugger.resume' });
     }
   });
 
