@@ -108,6 +108,10 @@ function hookApp (uri) {
       return;
     }
 
+    if (data.method === 'Runtime.exceptionThrown') {
+      console.log(data.params.exceptionDetails.exception.description);
+    }
+
     if (data.method === 'Debugger.paused') {
       if (data.params.asyncStackTrace) {
         const st = logStackTrace(data.params.asyncStackTrace);
