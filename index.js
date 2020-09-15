@@ -9,7 +9,7 @@ const WebSocket = require('ws');
 const blackList = new RegExp('^internal[/].*|bin/npm-cli.js$|bin/yarn.js$');
 
 getPort().then(port => {
-  const cp = spawn('node', [`--inspect=127.0.0.1:${port}`, ...process.argv.slice(2)], {
+  const cp = spawn('node', ['--unhandled-rejections=strict', `--inspect=127.0.0.1:${port}`, ...process.argv.slice(2)], {
     stdio: [process.stdin, process.stdout, 'pipe']
   });
 
@@ -114,27 +114,21 @@ function hookApp (uri) {
 
     if (data.method === 'Debugger.paused') {
       if (data.params.asyncStackTrace) {
-        const st = logStackTrace(data.params.asyncStackTrace);
-
-        const objectId = JSON.parse(data.params.data.objectId);
-        objectId.id = objectId.id + 1;
-        const variables = await send({
-          method: 'Runtime.getProperties',
-          params: {
-            objectId: JSON.stringify(objectId)
-          }
-        });
-
-        const errorVariableName = variables.result && variables.result.result && variables.result.result[0] ? variables.result.result[0].name : 'err';
-
+        const stacktrace = logStackTrace(data.params.asyncStackTrace);
         await send({
-          method: 'Debugger.evaluateOnCallFrame',
+          method: 'Runtime.callFunctionOn',
           params: {
-            callFrameId: '{"ordinal":0,"injectedScriptId":1}',
-            returnByValue: false,
-            silent: false,
-            objectGroup: 'console',
-            expression: `${errorVariableName}.stack = ${errorVariableName}.stack + \`${st}\``
+            objectId: data.params.data.objectId,
+            arguments: [
+              { value: stacktrace }
+            ],
+            functionDeclaration: `
+              function(stacktrace) {
+                this.stack = this.stack + "\\n----------\\n" + stacktrace;
+                this.stack = this.stack.replace(/\\n\\n/g, '\\n');
+              }
+            `,
+            silent: true
           }
         });
 
