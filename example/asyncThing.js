@@ -1,4 +1,4 @@
-const fs = require('fs/promises');
+import fs from 'fs/promises';
 
 function asyncThing (connection, sql, parameters, callback) {
   process.stderr.write('oh noes\n');
@@ -7,4 +7,4 @@ function asyncThing (connection, sql, parameters, callback) {
   });
 }
 
-module.exports = asyncThing;
+export default asyncThing;

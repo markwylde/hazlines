@@ -1,4 +1,4 @@
-const asyncThing = require('./asyncThing');
+import asyncThing from './asyncThing.js';
 
 async function main () {
   setTimeout(() => {

@@ -1,5 +1,6 @@
 {
   "name": "hazlines",
+  "type": "module",
   "version": "1.2.7",
   "description": "Log out all call stacks on errors",
   "bin": {
@@ -13,9 +14,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk": "^4.1.0",
-    "get-port": "^5.1.1",
-    "ws": "^7.3.1"
+    "chalk": "^5.3.0",
+    "get-port": "^7.1.0",
+    "ws": "^8.17.1"
   },
   "devDependencies": {}
 }

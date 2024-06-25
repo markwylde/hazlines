@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
-
-const getPort = require('get-port');
-const chalk = require('chalk');
-const WebSocket = require('ws');
+import { spawn } from 'child_process';
+import getPort from 'get-port';
+import chalk from 'chalk';
+import WebSocket from 'ws';
 
 const blackList = new RegExp('^internal[/].*|bin/npm-cli.js$|bin/yarn.js$');
 
